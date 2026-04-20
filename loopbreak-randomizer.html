@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Break — Activity Randomizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --outside: #2D6A4F;
+    --outside-light: #D8F3DC;
+    --outside-mid: #74C69D;
+    --inside: #1D3557;
+    --inside-light: #D6E8F7;
+    --inside-mid: #457B9D;
+    --mental: #6B3FA0;
+    --mental-light: #EDE7F6;
+    --mental-mid: #9D6FC2;
+    --bg: #FAFAF8;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .header p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    background: #EFEFED;
+    padding: 5px;
+    border-radius: 14px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active-outside { background: var(--outside); color: white; }
+  .tab.active-inside  { background: var(--inside);  color: white; }
+  .tab.active-mental  { background: var(--mental);  color: white; }
+
+  .roll-area {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .roll-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .roll-btn-outside { background: var(--outside); }
+  .roll-btn-inside  { background: var(--inside);  }
+  .roll-btn-mental  { background: var(--mental);  }
+
+  .roll-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .roll-btn:active { transform: scale(0.98); }
+
+  .dice {
+    display: inline-block;
+    font-size: 1.1rem;
+    transition: transform 0.4s ease;
+  }
+
+  .dice.spin { animation: spin 0.4s ease; }
+  @keyframes spin {
+    0%   { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.3); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+
+  .result-card {
+    width: 100%;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none;
+  }
+
+  .result-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .result-card-outside { background: var(--outside-light); border: 1.5px solid var(--outside-mid); }
+  .result-card-inside  { background: var(--inside-light);  border: 1.5px solid var(--inside-mid);  }
+  .result-card-mental  { background: var(--mental-light);  border: 1.5px solid var(--mental-mid);  }
+
+  .result-badge {
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .result-badge-outside { color: var(--outside); }
+  .result-badge-inside  { color: var(--inside);  }
+  .result-badge-mental  { color: var(--mental);  }
+
+  .result-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.35rem);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .result-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .result-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .result-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 50px;
+    color: white;
+    transition: opacity 0.15s;
+  }
+
+  .result-link:hover { opacity: 0.85; }
+  .result-link-outside { background: var(--outside); }
+  .result-link-inside  { background: var(--inside);  }
+  .result-link-mental  { background: var(--mental);  }
+
+  .try-again {
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color 0.15s;
+  }
+
+  .try-again:hover { color: var(--text); }
+
+  .counter {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>What should I do?</h1>
+  <p>Pick your category and let us choose for you.</p>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="setCategory('outside', this)">🌳 Outside</button>
+  <button class="tab" onclick="setCategory('inside', this)">🏠 Inside</button>
+  <button class="tab" onclick="setCategory('mental', this)">🧠 Mental</button>
+</div>
+
+<div class="roll-area">
+  <button class="roll-btn roll-btn-outside" id="rollBtn" onclick="roll()">
+    <span class="dice" id="dice">🎲</span>
+    Pick a random activity
+  </button>
+
+  <div class="result-card result-card-outside" id="resultCard">
+    <div class="result-badge result-badge-outside" id="resultBadge"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-footer">
+      <span class="result-time" id="resultTime"></span>
+      <a class="result-link result-link-outside" id="resultLink" href="#" target="_blank">
+        Open in Notion →
+      </a>
+    </div>
+  </div>
+
+  <div id="resultFooter" style="display:none; text-align:center; width:100%;">
+    <button class="try-again" onclick="roll()">↺ Try another</button>
+    <div class="counter" id="counter"></div>
+  </div>
+</div>
+
+<script>
+const data = {
+  outside: {
+    label: '🌳 Outside',
+    activities: [
+      { title: 'Take a 20 min walk outside', time: '20 min', url: 'https://www.notion.so/343868db598f80a4af1ded9597f3370d' },
+      { title: 'Choose a spot outside and count all the things you can see', time: '10 min', url: 'https://www.notion.so/343868db598f80a4a595ced0d6366472' },
+      { title: "Go outside and touch the first living being you see that's not human", time: '5 min', url: 'https://www.notion.so/343868db598f80f29d3fd317b0626cf1' },
+      { title: 'Go outside, focus on a cloud and describe all the things it looks like', time: '10 min', url: 'https://www.notion.so/343868db598f8062bbe4dd2457f44d8e' },
+      { title: 'Walk outside until you see a bus', time: '5–15 min', url: 'https://www.notion.so/343868db598f801a8f40dbb317654410' },
+    ]
+  },
+  inside: {
+    label: '🏠 Inside',
+    activities: [
+      { title: 'Put 5 things in the bin', time: '5 min', url: 'https://www.notion.so/343868db598f809992b9f415f198777f' },
+      { title: 'Do 20–30 squats, push‑ups, or wall‑pushes', time: '5 min', url: 'https://www.notion.so/343868db598f80a281c5e676ae67b5fd' },
+      { title: 'Splash cold water on your face or hands', time: '2 min', url: 'https://www.notion.so/343868db598f8077baeecacacc57e2c3' },
+      { title: 'Hold something cold (ice pack, chilled water bottle, cold spoon)', time: '5 min', url: 'https://www.notion.so/343868db598f8020a43ee2f5c97ab9c5' },
+      { title: 'Shake your arms and legs like a kid shaking off water', time: '2 min', url: 'https://www.notion.so/343868db598f800fb94efa0efcf7afbe' },
+      { title: 'Stand up and walk around the room 20 times', time: '5 min', url: 'https://www.notion.so/343868db598f80deb7b6caf897396cc6' },
+      { title: "Read a few pages of a book or comic, even if you don't care about it", time: '10 min', url: 'https://www.notion.so/343868db598f802283ffe9102e80b09c' },
+      { title: 'Do a quick Google search for something totally random', time: '5 min', url: 'https://www.notion.so/343868db598f8066bb37edb66c0a83ad' },
+      { title: 'Arrange your desk items in a funny order', time: '5 min', url: 'https://www.notion.so/343868db598f80ec84aad7896b2a2d4d' },
+    ]
+  },
+  mental: {
+    label: '🧠 Mental',
+    activities: [
+      { title: 'Name aloud 5 things you can see, 4 you can touch, 3 sounds, 2 smells and 1 taste', time: '5 min', url: 'https://www.notion.so/85c3b395bc5548b99b0dd7fbeccf0b34' },
+      { title: 'Solve this Sudoku', time: '10–20 min', url: 'https://www.notion.so/044e9a389d1243a9899de9f894e459af' },
+      { title: 'Count backward from 100 to 0', time: '5 min', url: 'https://www.notion.so/3c08ae6ab6604778905a3f6160e3cdde' },
+      { title: 'Recite the alphabet, forward and then backwards', time: '2 min', url: 'https://www.notion.so/7a5578d23e18431d954fc4b61da2878e' },
+      { title: 'Text a friend something random or silly (not about OCD)', time: '5 min', url: 'https://www.notion.so/e62beac20c0e487dacd4d13b926c4c18' },
+      { title: 'Listen to one song you like, focusing only on the lyrics or the beat', time: '3–5 min', url: 'https://www.notion.so/036b37fa34b241b5909291c137c4d76d' },
+      { title: 'Tell yourself: "I will not do this compulsion for the next 5 minutes"', time: '5 min', url: 'https://www.notion.so/e2b40d6b44d043339ecee70f16206625' },
+      { title: '4-4-4 Breathing: 4 sec inhale, 4 sec hold, 4 sec exhale. Repeat x5', time: '5 min', url: 'https://www.notion.so/d08425f33a3a418ba8a72a9db79f2866' },
+    ]
+  }
+};
+
+let currentCat = 'outside';
+let lastIdx = null;
+
+function setCategory(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.tab').forEach(t => t.className = 'tab');
+  btn.classList.add('active-' + cat);
+
+  const rollBtn = document.getElementById('rollBtn');
+  rollBtn.className = 'roll-btn roll-btn-' + cat;
+
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card result-card-' + cat;
+
+  const badge = document.getElementById('resultBadge');
+  badge.className = 'result-badge result-badge-' + cat;
+
+  const link = document.getElementById('resultLink');
+  link.className = 'result-link result-link-' + cat;
+
+  card.classList.remove('visible');
+  document.getElementById('resultFooter').style.display = 'none';
+  lastIdx = null;
+}
+
+function roll() {
+  const cat = data[currentCat];
+  const list = cat.activities;
+
+  let idx;
+  do { idx = Math.floor(Math.random() * list.length); } while (list.length > 1 && idx === lastIdx);
+  lastIdx = idx;
+  const act = list[idx];
+
+  const dice = document.getElementById('dice');
+  dice.classList.remove('spin');
+  void dice.offsetWidth;
+  dice.classList.add('spin');
+
+  setTimeout(() => {
+    document.getElementById('resultBadge').textContent = cat.label;
+    document.getElementById('resultTitle').textContent = act.title;
+    document.getElementById('resultTime').textContent = '⏱ ' + act.time;
+    document.getElementById('resultLink').href = act.url;
+    document.getElementById('counter').textContent = (idx + 1) + ' of ' + list.length + ' activities in this category';
+
+    const card = document.getElementById('resultCard');
+    card.classList.add('visible');
+    document.getElementById('resultFooter').style.display = 'block';
+  }, 200);
+}
+
+// Set first tab active by default
+document.querySelector('.tab').classList.add('active-outside');
+</script>
+</body>
+</html>
