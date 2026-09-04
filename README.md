@@ -1,2 +1,2 @@
 # loopbreak-widget
-A code in HTML made by AI to use in a college project on Notion. It was a randomizer of activities so you could calm down when you were having episodes of severe OCD. Our project got a 16/20
+A code in HTML made by AI to use in a college project on Notion. It was a randomizer of activities so you could calm down when you were having episodes of severe OCD. Our project got a 16/20.
